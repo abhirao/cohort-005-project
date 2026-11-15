@@ -200,3 +200,18 @@ export async function requireInstructorOrAdmin(request: Request) {
 
   return { userId, user, isAdmin: user.role === UserRole.Admin };
 }
+
+/**
+ * Throws unless the user is a Student — for pages that only make sense for
+ * someone taking courses, such as their Bookmarks and Notes.
+ */
+export async function requireStudent(request: Request) {
+  const userId = await requireUserId(request);
+  const user = getUserById(userId);
+
+  if (!user || user.role !== UserRole.Student) {
+    throw data("Only Students can access this page.", { status: 403 });
+  }
+
+  return { userId, user };
+}
