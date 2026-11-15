@@ -72,6 +72,8 @@ async function seed() {
 
   // Drop and recreate tables for a clean seed
   sqlite.exec(`
+    DROP TABLE IF EXISTS bookmarks;
+    DROP TABLE IF EXISTS notes;
     DROP TABLE IF EXISTS comments;
     DROP TABLE IF EXISTS course_ratings;
     DROP TABLE IF EXISTS video_watch_events;
@@ -1814,6 +1816,52 @@ This course is still in draft while the cluster examples are rewritten against t
     .run();
 
   console.log(`Created ${countRows(schema.enrollments)} enrollments.`);
+
+  // ─── Bookmarks and Notes ───
+  // Private to each Student. Emma and Olivia use them; the others don't.
+
+  db.insert(schema.bookmarks)
+    .values([
+      {
+        userId: students[0].id,
+        lessonId: course1LessonIds[2],
+        createdAt: daysAgo(30),
+      },
+      {
+        userId: students[0].id,
+        lessonId: course2LessonIds[1],
+        createdAt: daysAgo(12),
+      },
+      {
+        userId: students[2].id,
+        lessonId: course1LessonIds[0],
+        createdAt: daysAgo(20),
+      },
+    ])
+    .run();
+
+  db.insert(schema.notes)
+    .values([
+      {
+        userId: students[0].id,
+        lessonId: course1LessonIds[2],
+        body: "Come back to this before the quiz.",
+        createdAt: daysAgo(30),
+        updatedAt: daysAgo(28),
+      },
+      {
+        userId: students[2].id,
+        lessonId: course2LessonIds[0],
+        body: "Try the exercise again without looking at the solution.",
+        createdAt: daysAgo(18),
+        updatedAt: daysAgo(18),
+      },
+    ])
+    .run();
+
+  console.log(
+    `Created ${countRows(schema.bookmarks)} bookmarks and ${countRows(schema.notes)} notes.`
+  );
 
   // ─── Course Ratings ───
   // Star ratings from enrolled students only. Not everyone rates.
